@@ -30,10 +30,11 @@ PATH = "C:\Program Files (x86)\geckodriver.exe"
 
 positions = ['Software Engineer', 'Data Analyst', 'Help Desk', 'UI/UX']
 areas = ['Washington DC', 'Bethesda MD', 'Arlington VA', 'Silver Spring MD']
+job_types = ['SE','DA','HD','UX']
 
 # only scraping 30% of the returned data for now
-with open('indeed_scrape_data_30_percent.csv', 'w', newline = '') as file:
-    field_names = ['Title','Company','Location','Link']
+with open('indeed_scrape_data_50_percent.csv', 'w', newline = '') as file:
+    field_names = ['Title','Company','Location','Type','Link']
     job_write = csv.DictWriter(file, fieldnames=field_names)
 
     job_write.writeheader()
@@ -63,6 +64,7 @@ with open('indeed_scrape_data_30_percent.csv', 'w', newline = '') as file:
 
         what = positions[i]
         where = areas[i]
+        jt = job_types[i]
 
         # use bot to go to link
         driver.get('https://www.indeed.com/')
@@ -108,7 +110,7 @@ with open('indeed_scrape_data_30_percent.csv', 'w', newline = '') as file:
             """
         
         # only 30% of the result pages are going to be traversed
-        temp_limit = int(limit * 0.3)
+        temp_limit = int(limit * 0.50)
 
         for page in range(0,temp_limit):
             time.sleep(2.3)
@@ -120,11 +122,17 @@ with open('indeed_scrape_data_30_percent.csv', 'w', newline = '') as file:
             time.sleep(4.3)
 
             for i in range(0, len(job_titles)):
-                job_write.writerow({'Title': job_titles[i].text ,
-                                    'Company': companies[i].text,
-                                    'Location': locations[i].text,
-                                    'Link': job_titles[i].get_attribute('href')
-                                    })
+                try:
+                    job_write.writerow({'Title': job_titles[i].text ,
+                                        'Company': companies[i].text,
+                                        'Type': jt,
+                                        'Location': locations[i].text,
+                                        'Link': job_titles[i].get_attribute('href')
+                                        })
+                except StaleElementReferenceException:
+                    continue
+                except:
+                    break
 
             current_page = driver.current_url
             print(current_page)
