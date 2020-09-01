@@ -115,7 +115,9 @@ with open('indeed_scrape_data_50_percent.csv', 'w', newline = '') as file:
                 job_write.writeheader()
                 """
             
-            # only 30% of the result pages are going to be traversed
+            # only 50% of the result pages are going to be traversed
+            # it's IMPORTANT to note that the higher the percentage, the more likely it's to be detected
+            # (in which case, specific changes need to be made to make the bot mimic human-like actions)
             temp_limit = int(limit * 0.50)
 
             for page in range(0,temp_limit):
@@ -141,6 +143,7 @@ with open('indeed_scrape_data_50_percent.csv', 'w', newline = '') as file:
                         break
 
                 current_page = driver.current_url
+                # just to show the script's progression on the terminal
                 print(current_page)
                 
                 try:
@@ -156,11 +159,12 @@ with open('indeed_scrape_data_50_percent.csv', 'w', newline = '') as file:
                 except:
                     time.sleep(2.25)
                     # sometimes the link is blocked by a pop-up element so, just manually go to the next page
+                    # achor links have the link to the next page in the href attribute
                     driver.get(next_button.get_attribute('href'))
 
             #====================================================================
             driver.quit()
 
-            print('\nWaiting to move on to the next job\n')
+            print('\nWaiting to move on to the next position and/or location\n')
             time.sleep(1.8)    
         
