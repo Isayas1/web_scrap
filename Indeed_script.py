@@ -28,9 +28,9 @@ PATH = "C:\Program Files (x86)\geckodriver.exe"
 #what = 'Software Engineer'
 #where = 'Washington DC'
 
-positions = ['Software Engineer', 'Data Analyst', 'Help Desk', 'UI/UX']
+positions = ['Software Engineer', 'Data Analyst', 'Help Desk', 'UI/UX', 'Junior DBA', 'AWS Cloud Engineer']
 areas = ['Washington DC', 'Bethesda MD', 'Arlington VA', 'Silver Spring MD']
-job_types = ['SE','DA','HD','UX']
+job_types = ['SE','DA','HD','UX','DBA', 'CE']
 
 # only scraping 30% of the returned data for now
 with open('indeed_scrape_data_50_percent.csv', 'w', newline = '') as file:
@@ -39,122 +39,128 @@ with open('indeed_scrape_data_50_percent.csv', 'w', newline = '') as file:
 
     job_write.writeheader()
         
+    # job title would be used for the outer loop
+    # look for a job in the locations proided within the areas list
     for i in range(0, len(positions)):
-
-        # obscrution to make selenium bot less detectable, read up on other ways to do this
-        options = webdriver.FirefoxOptions()
-        options.add_argument("--headless")
-        options.add_argument('--no-sandbox')
-        options.add_argument('--disable-gpu')
-        options.add_argument("start-maximized")
-        options.add_argument("disabled-infobars")
-        options.add_argument("--disable-extensions")
-        options.add_argument("--incognito")
-
-
-        # firefox unique obstruction 
-        profile = webdriver.FirefoxProfile()
-        profile.set_preference("general.useragent.override", "New User Agent")
-        profile.set_preference("browser.cache.disk.enable", False)
-        profile.set_preference("browser.cache.memory.enable", False)
-        profile.set_preference("browser.cache.offline.enable", False)
-        profile.set_preference("network.http.use-cache", False)
-
-        driver = webdriver.Firefox(options=options, executable_path=PATH, firefox_profile=profile)
-
+        
         what = positions[i]
-        where = areas[i]
         jt = job_types[i]
 
-        # use bot to go to link
-        driver.get('https://www.indeed.com/')
+        for j in range(0, len(areas)):
+            
+            # obscrution to make selenium bot less detectable, read up on other ways to do this
+            options = webdriver.FirefoxOptions()
+            options.add_argument("--headless")
+            options.add_argument('--no-sandbox')
+            options.add_argument('--disable-gpu')
+            options.add_argument("start-maximized")
+            options.add_argument("disabled-infobars")
+            options.add_argument("--disable-extensions")
+            options.add_argument("--incognito")
 
-        # locate sepecific web elements using different html tags/attributes
-        title_input = driver.find_element_by_id('text-input-what')
-        location_input = driver.find_element_by_id('text-input-where')
-        search_btn = driver.find_element_by_xpath('//*[@id="whatWhereFormId"]/div[3]/button')
 
-        # enter info input field
-        title_input.send_keys(what)
-        
-        # wait to mimic human actions
-        time.sleep(0.6)
+            # firefox unique obstruction 
+            profile = webdriver.FirefoxProfile()
+            profile.set_preference("general.useragent.override", "New User Agent")
+            profile.set_preference("browser.cache.disk.enable", False)
+            profile.set_preference("browser.cache.memory.enable", False)
+            profile.set_preference("browser.cache.offline.enable", False)
+            profile.set_preference("network.http.use-cache", False)
 
-        for characters in range(0,30):
-            time.sleep(0.15)
-            location_input.send_keys(Keys.BACK_SPACE)
+            driver = webdriver.Firefox(options=options, executable_path=PATH, firefox_profile=profile)
 
-        # enter info input field
-        location_input.send_keys(where)
+            #where = areas[i]
+            where = areas[j]
 
-        search_btn.click()
+            # use bot to go to link
+            driver.get('https://www.indeed.com/')
 
-        current_page = driver.current_url
+            # locate sepecific web elements using different html tags/attributes
+            title_input = driver.find_element_by_id('text-input-what')
+            location_input = driver.find_element_by_id('text-input-where')
+            search_btn = driver.find_element_by_xpath('//*[@id="whatWhereFormId"]/div[3]/button')
 
-        # element showing how many jobs have been found
-        results_element = driver.find_element_by_id('searchCountPages')
+            # enter info input field
+            title_input.send_keys(what)
+            
+            # wait to mimic human actions
+            time.sleep(0.6)
 
-        results = results_element.text.split()
+            for characters in range(0,30):
+                time.sleep(0.08)
+                location_input.send_keys(Keys.BACK_SPACE)
 
-        temp = results[3].replace(',','')
+            # enter info input field
+            location_input.send_keys(where)
 
-        # 15 results are displayed per page
-        limit = int(int(temp)/15)
-
-        #====================================================================
-
-        """with open('indeed_scrape_data_30_percent.csv', 'w', newline = '') as file:
-            field_names = ['Title','Company','Location','Link']
-            job_write = csv.DictWriter(file, fieldnames=field_names)
-            job_write.writeheader()
-            """
-        
-        # only 30% of the result pages are going to be traversed
-        temp_limit = int(limit * 0.50)
-
-        for page in range(0,temp_limit):
-            time.sleep(2.3)
-        
-            job_titles = driver.find_elements_by_class_name('jobtitle.turnstileLink')
-            companies = driver.find_elements_by_css_selector('span.company')            
-            locations = driver.find_elements_by_class_name('location.accessible-contrast-color-location')
-
-            time.sleep(4.3)
-
-            for i in range(0, len(job_titles)):
-                try:
-                    job_write.writerow({'Title': job_titles[i].text ,
-                                        'Company': companies[i].text,
-                                        'Type': jt,
-                                        'Location': locations[i].text,
-                                        'Link': job_titles[i].get_attribute('href')
-                                        })
-                except StaleElementReferenceException:
-                    continue
-                except:
-                    break
+            search_btn.click()
 
             current_page = driver.current_url
-            print(current_page)
+
+            # element showing how many jobs have been found
+            results_element = driver.find_element_by_id('searchCountPages')
+
+            results = results_element.text.split()
+
+            temp = results[3].replace(',','')
+
+            # 15 results are displayed per page
+            limit = int(int(temp)/15)
+
+            #====================================================================
+
+            """with open('indeed_scrape_data_30_percent.csv', 'w', newline = '') as file:
+                field_names = ['Title','Company','Location','Link']
+                job_write = csv.DictWriter(file, fieldnames=field_names)
+                job_write.writeheader()
+                """
             
-            try:
-                next_button = WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, "*//a[@aria-label='Next']")))
-                next_button.click()
-            except TimeoutException:
-                break
-            except StaleElementReferenceException:
-                break
-            except NoSuchWindowException:
-                driver = webdriver.Firefox(options=options, executable_path=PATH, firefox_profile=profile)
-                driver.get(current_page)
-            except:
-                time.sleep(2.3)
-                # sometimes the link is blocked by a pop-up element so, just manually go to the next page
-                driver.get(next_button.get_attribute('href'))
+            # only 30% of the result pages are going to be traversed
+            temp_limit = int(limit * 0.50)
 
-        #====================================================================
-        driver.quit()
+            for page in range(0,temp_limit):
+                time.sleep(1.2)
+            
+                job_titles = driver.find_elements_by_class_name('jobtitle.turnstileLink')
+                companies = driver.find_elements_by_css_selector('span.company')            
+                locations = driver.find_elements_by_class_name('location.accessible-contrast-color-location')
 
-        print('\nWaiting to move on to the next job\n')
-        time.sleep(6.2)    
-    
+                time.sleep(1.8)
+
+                for i in range(0, len(job_titles)):
+                    try:
+                        job_write.writerow({'Title': job_titles[i].text ,
+                                            'Company': companies[i].text,
+                                            'Type': jt,
+                                            'Location': locations[i].text,
+                                            'Link': job_titles[i].get_attribute('href')
+                                            })
+                    except StaleElementReferenceException:
+                        continue
+                    except:
+                        break
+
+                current_page = driver.current_url
+                print(current_page)
+                
+                try:
+                    next_button = WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, "*//a[@aria-label='Next']")))
+                    next_button.click()
+                except TimeoutException:
+                    break
+                except StaleElementReferenceException:
+                    break
+                except NoSuchWindowException:
+                    driver = webdriver.Firefox(options=options, executable_path=PATH, firefox_profile=profile)
+                    driver.get(current_page)
+                except:
+                    time.sleep(2.25)
+                    # sometimes the link is blocked by a pop-up element so, just manually go to the next page
+                    driver.get(next_button.get_attribute('href'))
+
+            #====================================================================
+            driver.quit()
+
+            print('\nWaiting to move on to the next job\n')
+            time.sleep(1.8)    
+        
