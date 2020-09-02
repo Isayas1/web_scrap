@@ -21,12 +21,17 @@ import requests
 import bs4
 import time
 import csv
+import datetime
 
 # firefox webdriver
 PATH = "C:\Program Files (x86)\geckodriver.exe"
 
 #what = 'Software Engineer'
 #where = 'Washington DC'
+
+begining_time = datetime.datetime.now()
+
+print('Started script at: {}'.format(begining_time))
 
 positions = ['Software Engineer', 'Data Analyst', 'Help Desk', 'UI/UX', 'Junior DBA', 'AWS Cloud Engineer']
 areas = ['Washington DC', 'Bethesda MD', 'Arlington VA', 'Silver Spring MD']
@@ -168,3 +173,6 @@ with open('indeed_scrape_data_50_percent.csv', 'w', newline = '') as file:
             print('\nWaiting to move on to the next position and/or location\n')
             time.sleep(1.8)    
         
+end_time = datetime.datetime.now()
+
+print('Begin: {}\nEnd: {}'.format(begining_time, end_time))
